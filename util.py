@@ -1,29 +1,23 @@
 import tldextract
+from random import randint
 from lists import (
     features_categorical_bounded,
     features_categorical_unbounded
 )
+import socket
+import struct
+import user_agents as ua
+import pandas as pd
 
-def dns_root(s):
+majestic_million = set(pd.read_csv("./data/ton_iot/majestic_million.csv")["Domain"])
+
+def random_ip():
+    return socket.inet_ntoa(struct.pack('>I', randint(0xac100001, 0xac1f0001)))
+
+def in_majestic_million(s):
     ex = tldextract.extract(s)
-    return ".".join([ex.domain, ex.suffix])
+    root_domain = ".".join([ex.domain, ex.suffix])
+    return str(root_domain in majestic_million) if s != "-" else "-"
 
-def feature_group_locs(i):
-    r = 0
-    if i >= 5:
-        r += 1
-    if i >= 16:
-        r += 1
-    if i >= 24:
-        r += 1
-    if i >= 30:
-        r += 1
-    return r
-
-def feature_to_type(k):
-    if k in features_categorical_bounded:
-        return "categorical_bounded"
-    elif k in features_categorical_unbounded:
-        return "categorical_unbounded"
-    else:
-        return "numeric"
+def user_agent_browser(a):
+    return ua.parse(a).browser.family if a != "-" else "-"
